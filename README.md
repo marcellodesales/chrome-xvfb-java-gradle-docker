@@ -1,4 +1,4 @@
-firefox-xvfb-java-gradle-docker
+chrome-xvfb-java-gradle-docker
 ----
 
 Runs ANY Selenium-based application using Gradle. This base image can be used by ANY Java project that requires
