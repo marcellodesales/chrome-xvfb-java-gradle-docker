@@ -1,41 +1,26 @@
-FROM sitespeedio/firefox:41.0
+FROM marcellodesales/gradle-java
+MAINTAINER Marcello de Sales <marcello.desales@gmail.com>
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install software-properties-common unzip
-
-# Install Java.
 RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer
-
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
-
-# Gradle
-ENV GRADLE_VERSION 2.7
-ENV GRADLE_HASH fe801ce2166e6c5b48b3e7ba81277c41
-WORKDIR /usr/lib
-RUN wget https://downloads.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
-RUN echo "${GRADLE_HASH} gradle-${GRADLE_VERSION}-bin.zip" > gradle-${GRADLE_VERSION}-bin.zip.md5
-RUN md5sum -c gradle-${GRADLE_VERSION}-bin.zip.md5
-RUN unzip "gradle-${GRADLE_VERSION}-bin.zip"
-RUN ln -s "/usr/lib/gradle-${GRADLE_VERSION}/bin/gradle" /usr/bin/gradle
-RUN rm "gradle-${GRADLE_VERSION}-bin.zip"
-RUN mkdir -p /usr/src/app
-
-# Set Appropriate Environmental Variables
-ENV GRADLE_HOME /usr/src/gradle
-ENV PATH $PATH:$GRADLE_HOME/bin
-
-# Caches
-VOLUME /root/.gradle/caches
-VOLUME /root/.m2/repository
-
-USER $USER
-# Default command is "/usr/bin/gradle -version" on /usr/bin/app dir
-# (ie. Mount project at /usr/bin/app "docker --rm -v /path/to/app:/usr/bin/app gradle <command>")
-#VOLUME /usr/bin/app
-WORKDIR /usr/bin/app
+apt-get update && \
+apt-get install -y wget unzip && \
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+  echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
+wget -N http://chromedriver.storage.googleapis.com/2.14/chromedriver_linux64.zip && \
+unzip chromedriver_linux64.zip && \
+rm chromedriver_linux64.zip && \
+chmod +x chromedriver && \
+mv -f chromedriver /usr/bin/chromedriver && \
+apt-get update && apt-get install -y \
+ca-certificates	\
+libgl1-mesa-dri \
+xfonts-100dpi \
+xfonts-75dpi \
+xfonts-scalable \
+xfonts-cyrillic \
+xvfb --no-install-recommends && \
+apt-get purge -y wget unzip && \
+apt-get install -y \
+google-chrome-stable && \
+apt-get clean autoclean && \
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
